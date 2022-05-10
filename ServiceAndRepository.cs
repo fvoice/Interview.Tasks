@@ -47,7 +47,7 @@ namespace ConsoleApp1
 
 		public async Task Save(object obj)
 		{
-			await SaveInternal(obj, 1);
+			await SaveInternal(obj, 1); //pass the initial attempt number 
 		}
 
 		public async Task SaveInternal(object obj, int attempt)
@@ -62,7 +62,7 @@ namespace ConsoleApp1
 
 				attempt++;
 
-				await SaveInternal(obj, attempt);
+				await SaveInternal(obj, attempt); //pass the increase attempt number
 			}
 		}
 	}
@@ -80,6 +80,7 @@ namespace ConsoleApp1
 			repoMock.Setup(x => x.Save(It.IsAny<object>()))
 				.Callback(() =>
 				{
+					//will increase the counter and generate and exception
 					attemptsCounter++;
 					throw new Exception();
 				});
