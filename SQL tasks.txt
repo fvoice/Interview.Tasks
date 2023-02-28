@@ -1,0 +1,60 @@
+﻿1.
+There is a table Employee cosisting of the following columns:
+Id, NameAndSurname, BirthDate, DepartmentName, DepartmentManagerName
+
+- write a query to fetch duplicate employees
+- what is wrong with this table from normalization perspective
+
+Solution: 
+SELECT NameAndSurname, BirthDate, ManagerName, DepartmentManagerName, COUNT (*)
+FROM Employee
+GROUP BY NameAndSurname, BirthDate, ManagerName, DepartmentManagerName
+HAVING COUNT(*) > 1
+
+Split NameAndSurname, create Department table, move DepartmentName, make reference from Employee table to Department table, make reference from Department to Employee to specify manager
+
+2.
+There is a DB scheme for a simple RBAC (Role based access control) for the following entities: User, Role, Asset. 
+Different users should have different privileges on a specified set of assets, for example like this: 
+User U1 can view and modify assets A1 and A2 when user U2 can only view asset A3 
+Write a query or queries fetching data about user's roles and linked assets by a user name in the most efficient way   
+
+*Constraints are ommited 
+CREATE TABLE User( 
+[Id] [int] IDENTITY(1,1) NOT NULL, 
+[Name] [nvarchar](450) NOT NULL, 
+) 
+CREATE NONCLUSTERED INDEX [IX_User] ON [User] ([Name]) 
+  
+CREATE TABLE Role( 
+[Id] [int] IDENTITY(1,1) NOT NULL, 
+[Name] [nvarchar](450) NOT NULL, 
+)   
+
+CREATE TABLE User_Role( 
+[User_Id] [int] NOT NULL, 
+[Role_Id] [int] NOT NULL, 
+) 
+  
+CREATE TABLE Asset( 
+[Id] [int] IDENTITY(1,1) NOT NULL, 
+[Name] [nvarchar](450) NOT NULL, 
+)  
+
+CREATE TABLE User_Asset( 
+[User_Id] [int] NOT NULL,
+[Asset_Id] [int] NOT NULL, 
+)   
+
+Solution: 
+
+Since the amount of roles can be more than 1 and the amount of assets can be significant, it is better to execute two queries and join results in memory: 
+SELECT a.* FROM User u 
+inner join User_Asset ua on ua.User_Id = u.Id 
+inner join Asset a on a.Id = ua.Asset_Id 
+where u.Name = @Name
+  
+SELECT r.* FROM User u 
+inner join User_Role ur on ur.User_Id = u.Id 
+inner join Role a on a.Id = ua.Role_Id 
+where u.Id = @Id 
